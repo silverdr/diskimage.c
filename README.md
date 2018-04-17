@@ -57,155 +57,133 @@ API
 ---
 
 ### Image Mounting
-
-#### `DiskImage *di_load_image(char *name);`
-
-::: {.comm}
+```c
+DiskImage *di_load_image(char *name);
+```
 Loads an image from disk and returns a pointer to the DiskImage
 structure.
-:::
 
-#### `DiskImage *di_create_image(char *name, int size);`
-
-::: {.comm}
+```c
+DiskImage *di_create_image(char *name, int size);
+```
 Creates an empty image. The type is determined from the size. Needs to
 be formatted before it can be used.
-:::
 
-#### `void di_free_image(DiskImage *di);`
-
-::: {.comm}
+```c
+void di_free_image(DiskImage *di);
+```
 Frees an image in memory. If the image has been modified, the changes
 will be written to disk.
-:::
 
-#### `void di_sync(DiskImage *di);`
-
-::: {.comm}
+```c
+void di_sync(DiskImage *di);
+```
 Writes the image to disk.
-:::
 
 ### Status
 
-#### `int di_status(DiskImage *di, char *status);`
-
-::: {.comm}
+```c
+int di_status(DiskImage *di, char *status);
+```
 Returns the drive status and copies the message to status.
-:::
 
 ### File I/O
 
-#### `ImageFile *di_open(DiskImage *di, unsigned char *rawname, FileType type, char *mode);`
-
-::: {.comm}
+```c
+ImageFile *di_open(DiskImage *di, unsigned char *rawname, FileType type, char *mode);
+```
 Open a file for reading or writing. Mode should be either \"rb\" (for
 reading) or \"wb\" for writing. If \"\$\" is given instead of the raw
 filename, the directory will be read.
-:::
 
-#### `void di_close(ImageFile *imgfile);`
-
-::: {.comm}
+```c
+void di_close(ImageFile *imgfile);
+```
 Close a file.
-:::
 
-#### `int di_read(ImageFile *imgfile, unsigned char *buffer, int len);`
-
-::: {.comm}
+```c
+int di_read(ImageFile *imgfile, unsigned char *buffer, int len);
+```
 Read len bytes of data into the buffer. Returns the number of bytes
 actually read.
-:::
 
-#### `int di_write(ImageFile *imgfile, unsigned char *buffer, int len);`
-
-::: {.comm}
+```c
+int di_write(ImageFile *imgfile, unsigned char *buffer, int len);
+```
 Write len bytes of data from the buffer. Returns the number of bytes
 actually written.
-:::
 
 ### Disk Commands
 
-#### `int di_format(DiskImage *di, unsigned char *rawname, unsigned char *rawid);`
-
-::: {.comm}
+```c
+int di_format(DiskImage *di, unsigned char *rawname, unsigned char *rawid);
+```
 Formats the image. If rawid is given, a full format is performed. If
 rawid is NULL, a quick format is performed.
-:::
 
-#### `int di_delete(DiskImage *di, unsigned char *rawpattern, FileType type);`
-
-::: {.comm}
+```c
+int di_delete(DiskImage *di, unsigned char *rawpattern, FileType type);
+```
 Deletes files matching the pattern.
-:::
 
-#### `int di_rename(DiskImage *di, unsigned char *oldrawname, unsigned char *newrawname, FileType type);`
-
-::: {.comm}
+```c
+int di_rename(DiskImage *di, unsigned char *oldrawname, unsigned char *newrawname, FileType type);
+```
 Renames a file.
-:::
 
 ### Disk Geometry
 
-#### `int di_sectors_per_track(ImageType type, int track);`
-
-::: {.comm}
+```c
+int di_sectors_per_track(ImageType type, int track);
+```
 Returns the number of sectors in a given track.
-:::
 
-#### `int di_tracks(ImageType type);`
-
-::: {.comm}
+```c
+int di_tracks(ImageType type);
+```
 Returns the number of tracks in the image.
-:::
 
 ### BAM
 
-#### `unsigned char *di_title(DiskImage *di);`
-
-::: {.comm}
+```c
+unsigned char *di_title(DiskImage *di);
+```
 Returns a pointer to the disk title and id in the BAM.
-:::
 
-#### `int di_track_blocks_free(DiskImage *di, int track);`
-
-::: {.comm}
+```c
+int di_track_blocks_free(DiskImage *di, int track);
+```
 Returns the number of free sectors in a given track.
-:::
 
-#### `int di_is_ts_free(DiskImage *di, TrackSector ts);`
-
-::: {.comm}
+```c
+int di_is_ts_free(DiskImage *di, TrackSector ts);
+```
 Returns non-zero if the given track and sector is free, and zero if
 it\'s allocated.
-:::
 
-#### `void di_alloc_ts(DiskImage *di, TrackSector ts);`
-
-::: {.comm}
+```c
+void di_alloc_ts(DiskImage *di, TrackSector ts);
+```
 Allocate a given track and sector.
-:::
 
-#### `void di_free_ts(DiskImage *di, TrackSector ts);`
-
-::: {.comm}
+```c
+void di_free_ts(DiskImage *di, TrackSector ts);
+```
 Free a given track and sector.
-:::
 
 ### Name Conversion
 
-#### `int di_rawname_from_name(unsigned char *rawname, char *name);`
-
-::: {.comm}
+```c
+int di_rawname_from_name(unsigned char *rawname, char *name);
+```
 Converts a NULL-terminated string to 16-byte 0xa0 padding. Returns the
 length.
-:::
 
-#### `int di_name_from_rawname(char *name, unsigned char *rawname);`
-
-::: {.comm}
+```c
+int di_name_from_rawname(char *name, unsigned char *rawname);
+```
 Converts a 0xa0 padded string to a NULL-terminated string. Returns the
 length.
-:::
 
 History
 -------
