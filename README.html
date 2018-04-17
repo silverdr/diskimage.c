@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>diskimage.c - D64/D71/D81 library</title>
+
+<style type="text/css">
+
+body {
+  margin: 2em 4em;
+}
+
+.type {
+  color: #339933;
+}
+
+.func {
+  color: #0033ff;
+}
+
+.arg {
+  color: #cc9900;
+}
+
+.comm {
+  margin-top: 4px;
+  margin-bottom: 1em;
+}
+
+h3 {
+  margin-bottom: 0px;
+}
+
+h4 {
+  margin-top: 0.5em;
+  margin-bottom: 0px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>diskimage.c</h1>
+
+<p>
+	diskimage.c is an ANSI C library for manipulating Commodore disk
+	images.
+</p>
+
+<p>
+	The following formats are supported:
+</p>
+
+<ul>
+	<li>D64 - single sided 1541 disk image, with optional error info (currently ignored).</li>
+	<li>D71 - double sided 1571 disk image.</li>
+	<li>D81 - 3.5&quot; 1581 disk image (only root directory)</li>
+</ul>
+
+<p>
+	The following operations are implemented:
+</p>
+
+<ul>
+	<li>Open file ($ reads directory).</li>
+	<li>Read file.</li>
+	<li>Write file.</li>
+	<li>Close file.</li>
+	<li>Delete file.</li>
+	<li>Rename file.</li>
+	<li>Format disk.</li>
+	<li>Allocate sector.</li>
+	<li>Deallocate sector.</li>
+</ul>
+
+
+<h2>Download</h2>
+
+<dl>
+	<dt><code><a href="diskimage-0.95.zip">diskimage-0.95.zip</a></code></dt>
+	<dd>The latest release.</dd>
+	<dt><code><a href="diskimage-0.96b.zip">diskimage-0.96b.zip</a></code></dt>
+	<dd>The latest beta release.</dd>
+	<dt><code><a href="diskimage-20090111.zip">diskimage-20090111.zip</a></code></dt>
+	<dd>The latest CVS snapshot, with the unfinished merge of Groepaz patches.</dd>
+</dl>
+
+
+<h2>Sample Code</h2>
+
+<dl>
+  <dt><code><a href="test_bam.c">test_bam.c</a></code></dt>
+  <dd>Prints out the BAM.</dd>
+
+  <dt><code><a href="test_dir.c">test_dir.c</a></code></dt>
+  <dd>Lists the directory.</dd>
+
+  <dt><code><a href="test_read.c">test_read.c</a></code></dt>
+  <dd>Copies a file from a disk image.</dd>
+
+  <dt><code><a href="test_write.c">test_write.c</a></code></dt>
+  <dd>Copies a file to a disk image.</dd>
+
+  <dt><code><a href="test_format.c">test_format.c</a></code></dt>
+  <dd>Creates an empty disk image.</dd>
+</dl>
+
+
+
+<h2>API</h2>
+
+
+<h3>Image Mounting</h3>
+
+<h4><code><span class="type"><span class="type">DiskImage</span></span> *<span class="func">di_load_image</span>(<span class="type">char</span> *<span class="arg">name</span>);</code></h4>
+<div class="comm">
+	Loads an image from disk and returns a pointer to the DiskImage
+	structure.
+</div>
+
+<h4><code><span class="type"><span class="type">DiskImage</span></span> *<span class="func">di_create_image</span>(<span class="type">char</span> *<span class="arg">name</span>, <span class="type">int</span> <span class="arg">size</span>);</code></h4>
+<div class="comm">
+	Creates an empty image. The type is determined from the size. Needs
+	to be formatted before it can be used.
+</div>
+
+<h4><code><span class="type">void</span> <span class="func">di_free_image</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>);</code></h4>
+<div class="comm">
+	Frees an image in memory. If the image has been modified, the
+	changes will be written to disk.
+</div>
+
+<h4><code><span class="type">void</span> <span class="func">di_sync</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>);</code></h4>
+<div class="comm">
+	Writes the image to disk.
+</div>
+
+
+<h3>Status</h3>
+
+<h4><code><span class="type">int</span> <span class="func">di_status</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">char</span> *<span class="arg">status</span>);</code></h4>
+<div class="comm">
+	Returns the drive status and copies the message to status.
+</div>
+
+
+<h3>File I/O</h3>
+
+<h4><code><span class="type">ImageFile</span> *<span class="func">di_open</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">unsigned char</span> *<span class="arg">rawname</span>, <span class="type">FileType</span> <span class="arg">type</span>, <span class="type">char</span> *<span class="arg">mode</span>);</code></h4>
+<div class="comm">
+	Open a file for reading or writing. Mode should be either "rb" (for
+	reading) or "wb" for writing. If "$" is given instead of the raw
+	filename, the directory will be read.
+</div>
+
+<h4><code><span class="type">void</span> <span class="func">di_close</span>(<span class="type">ImageFile</span> *<span class="arg">imgfile</span>);</code></h4>
+<div class="comm">
+	Close a file.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_read</span>(<span class="type">ImageFile</span> *<span class="arg">imgfile</span>, <span class="type">unsigned char</span> *<span class="arg">buffer</span>, <span class="type">int</span> <span class="arg">len</span>);</code></h4>
+<div class="comm">
+	Read len bytes of data into the buffer. Returns the number of bytes
+	actually read.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_write</span>(<span class="type">ImageFile</span> *<span class="arg">imgfile</span>, <span class="type">unsigned char</span> *<span class="arg">buffer</span>, <span class="type">int</span> <span class="arg">len</span>);</code></h4>
+<div class="comm">
+	Write len bytes of data from the buffer. Returns the number of bytes
+	actually written.
+</div>
+
+
+<h3>Disk Commands</h3>
+
+<h4><code><span class="type">int</span> <span class="func">di_format</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">unsigned char</span> *<span class="arg">rawname</span>, <span class="type">unsigned char</span> *<span class="arg">rawid</span>);</code></h4>
+<div class="comm">
+	Formats the image. If rawid is given, a full format is performed. If
+	rawid is NULL, a quick format is performed.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_delete</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">unsigned char</span> *<span class="arg">rawpattern</span>, <span class="type">FileType</span> <span class="arg">type</span>);</code></h4>
+<div class="comm">
+	Deletes files matching the pattern.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_rename</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">unsigned char</span> *<span class="arg">oldrawname</span>, <span class="type">unsigned char</span> *<span class="arg">newrawname</span>, <span class="type">FileType</span> <span class="arg">type</span>);</code></h4>
+<div class="comm">
+	Renames a file.
+</div>
+
+
+<h3>Disk Geometry</h3>
+
+<h4><code><span class="type">int</span> <span class="func">di_sectors_per_track</span>(<span class="type">ImageType</span> <span class="arg">type</span>, <span class="type">int</span> <span class="arg">track</span>);</code></h4>
+<div class="comm">
+	Returns the number of sectors in a given track.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_tracks</span>(<span class="type">ImageType</span> <span class="arg">type</span>);</code></h4>
+<div class="comm">
+	Returns the number of tracks in the image.
+</div>
+
+
+<h3>BAM</h3>
+
+<h4><code><span class="type">unsigned char</span> *<span class="func">di_title</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>);</code></h4>
+<div class="comm">
+	Returns a pointer to the disk title and id in the BAM.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_track_blocks_free</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">int</span> <span class="arg">track</span>);</code></h4>
+<div class="comm">
+	Returns the number of free sectors in a given track.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_is_ts_free</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">TrackSector</span> <span class="arg">ts</span>);</code></h4>
+<div class="comm">
+	Returns non-zero if the given track and sector is free, and zero if
+	it's allocated.
+</div>
+
+<h4><code><span class="type">void</span> <span class="func">di_alloc_ts</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">TrackSector</span> <span class="arg">ts</span>);</code></h4>
+<div class="comm">
+	Allocate a given track and sector.
+</div>
+
+<h4><code><span class="type">void</span> <span class="func">di_free_ts</span>(<span class="type">DiskImage</span> *<span class="arg">di</span>, <span class="type">TrackSector</span> <span class="arg">ts</span>);</code></h4>
+<div class="comm">
+	Free a given track and sector.
+</div>
+
+
+<h3>Name Conversion</h3>
+
+<h4><code><span class="type">int</span> <span class="func">di_rawname_from_name</span>(<span class="type">unsigned char</span> *<span class="arg">rawname</span>, <span class="type">char</span> *<span class="arg">name</span>);</code></h4>
+<div class="comm">
+	Converts a NULL-terminated string to 16-byte 0xa0 padding. Returns
+	the length.
+</div>
+
+<h4><code><span class="type">int</span> <span class="func">di_name_from_rawname</span>(<span class="type">char</span> *<span class="arg">name</span>, <span class="type">unsigned char</span> *<span class="arg">rawname</span>);</code></h4>
+<div class="comm">
+	Converts a 0xa0 padded string to a NULL-terminated string. Returns
+	the length.
+</div>
+
+
+
+
+<h2>History</h2>
+
+<dl>
+  <dt> diskimage.c v0.9, 2004-02-12</dt>
+  <dd> Initial release.</dd>
+
+  <dt> diskimage.c v0.91, 2004-06-02</dt>
+  <dd> Bugfix: sector allocation would allocate from directory track.<br>
+       Thanks to Ethan Dicks for finding this one.</dd>
+
+  <dt> diskimage.c v0.92, 2005-08-06</dt>
+  <dd> Bugfix: 1541 ignores T/S link in BAM.<br>
+       Thanks to Henrik Jansson for finding the bug.</dd>
+
+  <dt> diskimage.c v0.93, 2005-11-05</dt>
+  <dd> Bugfix: 1541 ignores T/S link in BAM. Again.<br>
+       Thanks to Henrik Jansson for finding the bug. Again.</dd>
+
+  <dt> diskimage.c v0.94, 2005-11-05</dt>
+  <dd> Bugfix: 1571 also ignores T/S link in BAM.<br>
+       Added support for D64s with error info (but info is ignored).</dd>
+
+  <dt> diskimage.c v0.95, 2006-04-25</dt>
+  <dd> Bugfix: di_load_image didn't close the filehandle.<br>
+       Added file name pattern matching.<br>
+       Added di_delete and di_rename.<br>
+       Added preliminary support for DOS status.</dd>
+</dl>
+
+
+
+
+<h2>Links</h2>
+
+
+<h3>Applications that use diskimage.c</h3>
+
+<ul>
+	<li> <a href="http://www.paradroid.net/cgterm/">CGTerm</a></li>
+	<li> <a href="http://noname.c64.org/csdb/release/?id=43862">D64scan</a></li>
+	<li> <a href="http://www.lallafa.de/blog/">DiskImagery64</a></li>
+	<li> <a href="http://search.cpan.org/~pawelkrol/D64-Disk-Image-0.01/lib/D64/Disk/Image.pm">Image.pm Perl module</a></li>
+</ul>
+
+
+
+
+<h2>License</h2>
+
+<p>
+	diskimage.c and the sample code is released under a slightly modified
+	BSD license. In addition I'd appreciate if you let me know if you use
+	it so that I can provide a link above, and that you link back to this
+	page from your home page.
+</p>
+
+<p>
+	Copyright (c) 2003-2006, Per Olofsson<br>
+	All rights reserved.
+</p>
+
+<p>
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are
+	met:
+</p>
+
+<ul>
+  <li> Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.</li>
+
+  <li> Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided
+    with the distribution.</li>
+</ul>
+
+<p>
+	<small>
+		THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+		"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+		LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+		A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+		OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+		SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+		LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+		DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+		THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+		(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+		OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	</small>
+</p>
+</body>
+</html>
